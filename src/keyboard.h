@@ -150,7 +150,7 @@ private:
         static int keymap_tab[] = {
                 /* scancode             column      bit     */
                 SDL_SCANCODE_SPACE,         0x780,
-                SDL_SCANCODE_GRAVE,         0x701,
+                SDL_SCANCODE_GRAVE,         0x740,
                 SDL_SCANCODE_RIGHTBRACKET,  0x720,
                 SDL_SCANCODE_BACKSLASH,     0x710,
                 SDL_SCANCODE_LEFTBRACKET,   0x708,
@@ -183,7 +183,8 @@ private:
                 SDL_SCANCODE_C,             0x408,
                 SDL_SCANCODE_B,             0x404,
                 SDL_SCANCODE_A,             0x402,
-                SDL_SCANCODE_MINUS,         0x401, // 189:-@
+                SDL_SCANCODE_MINUS,         0x320, // '-/=' (row3 bit5) — same cell as EQUALS
+                -101,                         0x401, // SC_AT: virtual 'Ю/@' keycap (row4 bit0)
 
                 SDL_SCANCODE_SLASH,         0x380,
                 SDL_SCANCODE_PERIOD,        0x340,
@@ -405,7 +406,8 @@ private:
                 SDL_SCANCODE_C,             0x408,
                 SDL_SCANCODE_B,             0x404,
                 SDL_SCANCODE_A,             0x402,
-                SDL_SCANCODE_MINUS,         0x401, // 189:-@
+                SDL_SCANCODE_MINUS,         0x320, // '-/=' (row3 bit5) — same cell as EQUALS
+                -101,                         0x401, // SC_AT: virtual 'Ю/@' keycap (row4 bit0)
 
                 SDL_SCANCODE_SLASH,         0x380,
                 SDL_SCANCODE_PERIOD,        0x340,

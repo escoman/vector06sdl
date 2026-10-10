@@ -217,7 +217,7 @@ public:
                     this->realoutput(3, 0);
                 }
                 if (((this->PC & 8) != ruslat) && this->onruslat) {
-                    this->onruslat((this->PC & 8) == 0);
+                    this->onruslat((this->PC & 8) != 0);
                 }
                 // if (debug) {
                 //     console.log("output commit cw = ", this->CW.toString(16));
@@ -229,7 +229,7 @@ public:
                 this->PC = w8;
                 //this->ontapeoutchange(this->PC & 1);
                 if (((this->PC & 8) != ruslat) && this->onruslat) {
-                    this->onruslat((this->PC & 8) == 0);
+                    this->onruslat((this->PC & 8) != 0);
                 }
                 break;
             case 0x02:
