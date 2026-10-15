@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <cstdint>
 #include <vector>
 #include <functional>
 #if !defined(__ANDROID_NDK__) && !defined(__GODOT__)
@@ -69,6 +70,22 @@ public:
         std::function<void(int)> frame;
         std::function<void(int)> jump;
     } hooks;
+
+#ifdef V06C_DEBUGGER
+    // Debugger-only: fired on the emulation thread the instant a HARDWARE
+    // interrupt is actually taken (INT line asserted while INTE/i8080_iff()
+    // is set) and vectorized through RST 7 -> 0x0038. Lets the debugger's I/O
+    // Inspector log real interrupts with their return site, wake-from-HLT flag
+    // and stack pointer. Never assigned in the vanilla emulator (macro
+    // undefined), so the execution path there is completely unaffected.
+    //   ret_pc   - PC pushed by RST 7 (address that was interrupted; for a
+    //              wake-from-HLT this is the byte after the HLT opcode)
+    //   was_halt - true when the INT woke the CPU out of HLT (0x76)
+    //   sp       - stack pointer BEFORE the return address is pushed
+    //   vector   - target vector taken (0x0038 for RST 7)
+    std::function<void(uint16_t ret_pc, bool was_halt, uint16_t sp,
+                       uint16_t vector)> oninterrupt;
+#endif
 
     // a hack to pass return value from io.onread 
     int ioread;

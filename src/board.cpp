@@ -115,9 +115,20 @@ bool Board::check_interrupt()
 {
     if (this->irq && i8080_iff()) {
         this->interrupt(false);     // lower INTE which clears INT request on D65.2
+        bool was_halt = false;
         if (this->last_opcode == 0x76) {
             i8080_jump(i8080_pc() + 1);
+            was_halt = true;
         }
+#ifdef V06C_DEBUGGER
+        // Report the hardware interrupt BEFORE the RST 7 pushes the return
+        // address, so ret_pc / sp reflect the interrupted site. Runs on the
+        // emulation thread. Debugger-only: oninterrupt is unset in vanilla.
+        if (this->oninterrupt) {
+            this->oninterrupt(static_cast<uint16_t>(i8080_pc()), was_halt,
+                              static_cast<uint16_t>(i8080_regs_sp()), 0x0038);
+        }
+#endif
         i8080_execute(0xff);    // rst7
         this->instr_time += 16;
 
