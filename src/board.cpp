@@ -40,7 +40,7 @@ Board::Board(Memory & _memory, IO & _io, PixelFiller & _filler, Soundnik & _snd,
         TV & _tv, WavPlayer & _tape_player)
     : memory(_memory), io(_io), filler(_filler), soundnik(_snd), tv(_tv),
     tape_player(_tape_player),
-    debugging(0), debugger_interrupt(0)
+    debugging(0), debugger_interrupt(0), frame_incomplete(false)
 {
     this->inte = false;
 }
@@ -101,6 +101,10 @@ void Board::reset(Board::ResetMode mode)
 
     last_opcode = 0;
     irq = false;
+    /* A reset starts over at a frame boundary: the next execute_frame must
+     * run its preamble (filler.reset(), ++frame_no) even if the previous
+     * frame was left unfinished by the debugger. */
+    this->frame_incomplete = false;
     i8080_init();
 }
 
@@ -143,16 +147,26 @@ bool Board::check_interrupt()
 #define DBG_FRM(a,b,bob) {};
 int Board::execute_frame(bool update_screen)
 {
-    if (this->hooks.frame) this->hooks.frame(this->frame_no);
     if (this->poll_debugger) this->poll_debugger();
     if (this->debugger_interrupt) return 0;
 
-    ++this->frame_no;
-    this->filler.reset();
-    this->irq_carry = false; // imitates cpu waiting after T2 when INTE
+    /* Frame preamble only at a real video frame boundary. If the debugger
+     * aborted a previous call mid-frame (breakpoint, watchpoint or pause),
+     * the CPU resumes at the stopping address, so the beam must continue
+     * from the position it stopped at too: skip ++frame_no and filler.reset()
+     * until the interrupted frame is filled up to its end-of-frame brk.
+     * between/instr_time are kept as well — they carry the time already
+     * spent inside the current frame. */
+    if (!this->frame_incomplete) {
+        if (this->hooks.frame) this->hooks.frame(this->frame_no);
+        ++this->frame_no;
+        this->filler.reset();
+        this->irq_carry = false; // imitates cpu waiting after T2 when INTE
 
-    // 59904
-    this->between = 0;
+        // 59904
+        this->between = 0;
+        this->frame_incomplete = true;
+    }
     DBG_FRM(F1,F2, printf("--- %d ---\n", this->frame_no));
     for (; !this->filler.brk && !this->debugger_interrupt;) {
         this->check_interrupt();
@@ -168,7 +182,10 @@ int Board::execute_frame(bool update_screen)
 
         this->single_step(update_screen);
     }
-    //printf("between = %d\n", this->between);
+    /* The frame is only complete when the video path reached the end of
+     * frame; a debugger stop leaves it incomplete so that the next call
+     * resumes the same frame instead of restarting the raster from line 0. */
+    if (this->filler.brk) this->frame_incomplete = false;
     return 1;
 }
 

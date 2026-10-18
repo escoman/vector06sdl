@@ -56,6 +56,12 @@ private:
 
     int debugging;
     int debugger_interrupt;
+    /* True between the frame preamble (++frame_no, filler.reset()) and the
+     * end-of-frame filler.brk. Set mid-frame only when a debugger stop
+     * (breakpoint, watchpoint, pause) aborted execute_frame before the video
+     * path finished the frame. A resuming execute_frame keeps this flag set
+     * and continues the interrupted frame instead of starting a new one. */
+    bool frame_incomplete;
     std::vector<Breakpoint> breakpoints;
     std::vector<Watchpoint> memory_watchpoints;
     std::vector<Watchpoint> io_watchpoints;
