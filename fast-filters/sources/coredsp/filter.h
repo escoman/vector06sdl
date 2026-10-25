@@ -29,7 +29,7 @@ struct FIR {
   unsigned i_ = {};
   std::unique_ptr<real_type[]> x_;
   std::unique_ptr<real_type[], coreutil::aligned_delete<real_type>> c_;
-  std::unique_ptr<real_type[]> x_aligned;
+  std::unique_ptr<real_type[], coreutil::aligned_delete<real_type>> x_aligned;
   //real_type aligned_buffer[] __attribute__((aligned(16)));
  public:
   real_type impl_scalar() const;
